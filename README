@@ -1,0 +1,106 @@
+==
+ix
+==
+
+command line client for online judges
+
+run locally
+
+  python3 -mix run solutions/POJ/1000.cpp
+
+check against sample input/output
+
+  python3 -mix test solutions/POJ/1000.cpp
+
+submit solution
+
+  python3 -mix submit -w solutions/POJ/1000.cpp
+
+
+Configuration
+=============
+
+config file (default: ixcfg.py)
+
+get_compile_argv(filename) (NO DEFAULT)
+  return argv, target if compilation required
+  return None if it is a script
+
+prepare_submission(compilers, code) (NO_DEFAULT)
+  return compiler, code
+  return None if no suitable compiler found
+
+ROOTDIR (default: `pwd`)
+  root directory of all files
+
+VERBOSE (default: ${VERBOSE})
+  verbose
+
+NOASK (default: ${NOASK})
+  do not ask for password when not logged in
+
+SOLUTSIONS_DIR (default: ${ROOTDIR}/solutions)
+  root directory of solutions
+
+TESTCASES_DIR (default: ${ROOTDIR}/solutions)
+  root directory of testcases
+
+LOGIN_MAX_RETRY (default: 2)
+  retry times when failed to log in
+
+CREDENTIAL_READER (default: readline reader)
+  how to read password when not logged in
+
+CREDENTIAL_STORAGE (default: credentials.sqlite)
+  where to store credentials
+
+has_to_recompile(source, target) (default: return False if target exists and newer than source)
+  return True or False
+
+get_solution_info(filename)
+  filename is relative to SOLUTIONS_DIR
+  return oj, problem if it is a valid solution
+  otherwise return None
+
+get_run_argv(filename) (default: [filename])
+  return argv to run file
+
+default_testcase_prefix(oj, problem) (default: ${OJ}/${PROBLEM})
+  input filename: ${prefix}.in(.${n})
+  output filename: ${prefix}.out(.${n})
+
+testcase_prefixes (default: None)
+  you can set different prefix configuration for different online judge
+
+
+Add a new client
+================
+
+CREDENTIAL_INPUT_TITLE
+CREDENTIAL_INPUT_FIELDS
+  used for asking password
+
+COMPILERS
+  available compilers
+
+login(client)
+  return True when credential is valid
+  return False when credential is invalid
+  return None when failure caused by other issues.
+
+fetch(client, problem)
+  return [{"in": "input", "out": "expected output"}]
+  return False when failed
+  return None if not logged in (when decorated with login_required)
+
+submit(client, problem, compiler, code)
+  return token on success
+  return False on failure
+  return None if not logged in (when decorated with login_required)
+
+check(client, problem, token)
+  return (True, message, True) or (True, message, True, extra) on accepted
+  return (True, message, False) on wrong answer
+  return (False, message, False) on waiting
+  return False on failure
+  return None if not logged in (when decorated with login_required)
