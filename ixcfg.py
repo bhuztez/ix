@@ -1,6 +1,6 @@
 import os.path
 
-SOLUTION_PATTERN = r'^(?P<oj>\w+)(?:/.*)?/(?P<problem>\w+)\.c$'
+SOLUTION_PATTERN = r'^(?P<oj>\w+)(?:/.*)?/(?P<problem>[A-Za-z0-9_\-]+)\.c$'
 
 
 def get_compile_argv(filename):

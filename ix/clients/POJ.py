@@ -1,4 +1,5 @@
 import lxml.html
+from base64 import b64encode
 from . import login_required, request, with_cookie, Compiler
 
 USER = "user_id1"
@@ -61,8 +62,6 @@ def fetch(client, problem):
 
 @login_required
 def submit(client, problem, compiler, code):
-    from base64 import b64encode
-
     status,headers,body = client.post_form(
         "http://poj.org/submit",
         { "source": b64encode(code.encode("utf-8")),

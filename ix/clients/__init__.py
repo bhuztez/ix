@@ -1,4 +1,5 @@
 import sys
+import json
 from functools import wraps
 from importlib import import_module
 from urllib.parse import urlparse, urlencode
@@ -25,7 +26,7 @@ class Field(Message):
 
     def __init__(self,name,text):
         Message.__init__(self)
-        self.add_header('Content-Disposition','form-data',name=name)
+        self.add_header('Content-Disposition','form-data',name=name,charset="utf-8")
         self.set_payload(text,None)
 
 
@@ -131,9 +132,14 @@ class Client:
     def post(self, url, body, headers=None, request=request):
         return request(self, 'POST', url, body, headers)
 
+    def post_json(self, url, data, headers=None, request=request):
+        headers = headers or None
+        headers['Content-Type'] = 'application/json; charset=utf-8'
+        return request(self, 'POST', url, json.dumps(data), headers)
+
     def post_form(self, url, data, headers=None, request=request):
         headers = headers or {}
-        headers['Content-Type'] = 'application/x-www-form-urlencoded'
+        headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=utf-8'
         return self.post(url, urlencode(data).encode("utf-8"), headers, request)
 
     def post_multipart_form(self, url, data, headers=None, request=request):
