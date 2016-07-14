@@ -5,7 +5,6 @@ from . import login_required, request, with_cookie, Compiler
 USER = "username"
 PASS = "passwd"
 
-
 CREDENTIAL_INPUT_TITLE = "UVA (uva.onlinejudge.org)"
 CREDENTIAL_INPUT_FIELDS = (
     (USER, "Username", False),
@@ -59,8 +58,6 @@ def fetch(client, problem):
 
     input, = doc.xpath('//h2[font[a[normalize-space(text())="Sample Input"]]]/following-sibling::pre[1]/text()')
     output, = doc.xpath('//h2[font[a[normalize-space(text())="Sample Output"]]]/following-sibling::pre[1]/text()')
-    input = input.lstrip("\n")
-    output = output.lstrip("\n")
     return [{"in": input, "out": output}]
 
 

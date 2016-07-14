@@ -11,7 +11,14 @@ class SqliteCredentialStorage(BaseCredentialStorage):
     def cursor(self):
         self.conn = sqlite3.connect(self.filename)
         cursor = self.conn.cursor()
-        cursor.execute('CREATE TABLE IF NOT EXISTS credentials(oj text, key text, value text)')
+        cursor.execute(
+'''
+CREATE TABLE IF NOT EXISTS credentials(
+  oj TEXT,
+  key TEXT,
+  value TEXT,
+  UNIQUE(oj, key))
+''')
         return cursor
 
     def load(self, name):
@@ -24,6 +31,6 @@ class SqliteCredentialStorage(BaseCredentialStorage):
             "DELETE FROM credentials WHERE oj=? AND key NOT IN (%s)"%(','.join('?'*len(keys))),
             (name,) + tuple(keys))
         self.cursor.executemany(
-            "INSERT INTO credentials VALUES (?,?,?)",
+            "INSERT OR REPLACE INTO credentials VALUES (?,?,?)",
             [(name,k,v) for k,v in credential.items()])
         self.conn.commit()

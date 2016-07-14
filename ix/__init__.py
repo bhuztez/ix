@@ -182,6 +182,8 @@ def _find_testcases(dirname, basename):
 
 
 def save_testcase(filename, data):
+    data = data.replace('\r\n','\n').lstrip("\n")
+
     if not data.endswith("\n"):
         data += "\n"
 
@@ -196,7 +198,7 @@ def save_testcases(prefix, testcases):
     else:
         for i, testcase in enumerate(testcases):
             for k, v in testcase.items():
-                save_testcase(prefix+"."+k+"."+str(i), v)
+                save_testcase(prefix+"."+k+"."+str(i+1), v)
 
 
 def find_testcases(cfg, oj, problem):
