@@ -23,7 +23,7 @@ COMPILERS = {
 request_with_credential = with_cookie("cookie")(request)
 
 def is_post_success(status, headers):
-    return status != 302 and headers.get("location") != "http://poj.org/status"
+    return status == 302 and headers.get("location") == "http://poj.org/status"
 
 
 def login(client):
@@ -35,7 +35,7 @@ def login(client):
           "url": "/status"},
         request=request_with_credential)
 
-    if is_post_success(status, headers):
+    if not is_post_success(status, headers):
         return None
 
     status, headers, body = client.get(
@@ -72,7 +72,9 @@ def submit(client, problem, compiler, code):
           "encoded": "1"},
         request=request_with_credential)
 
-    if is_post_success(status, headers):
+    if not is_post_success(status, headers):
+        if b'Please login first.' in body:
+            return None
         return False
 
     return {"user_id": client.credential[USER], "language": compiler}

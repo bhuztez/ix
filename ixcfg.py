@@ -1,8 +1,9 @@
 import os.path
 
+SOLUTION_PATTERN = r'^(?P<oj>\w+)(?:/.*)?/(?P<problem>\w+)\.c$'
+
+
 def get_compile_argv(filename):
-    if not filename.endswith(".c"):
-        return
     target = os.path.splitext(filename)[0]+".elf"
     return ['gcc', '-Wall','-Wextra','-Werror','-o', target, filename], target
 

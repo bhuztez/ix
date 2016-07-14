@@ -1,5 +1,6 @@
 import os
 import os.path
+import sys
 import re
 from subprocess import Popen, PIPE
 from types import ModuleType
@@ -22,12 +23,6 @@ def has_to_recompile(source, target):
     elif os.stat(source).st_mtime >= os.stat(target).st_mtime:
         return True
     return False
-
-
-def get_solution_info(filename):
-    m = re.match(r'^(\w+)(?:/.*)?/(\w+)\.\w+$', filename)
-    if m:
-        return (m.group(1), m.group(2))
 
 
 def get_run_argv(filename):
@@ -54,7 +49,6 @@ def load_config_file(rootdir, filename, no_skip):
     d.setdefault("TESTCASES_DIR", os.path.join(cfg.ROOTDIR, "testcases"))
     d.setdefault("LOGIN_MAX_RETRY", 2)
     d.setdefault("has_to_recompile", has_to_recompile)
-    d.setdefault("get_solution_info", get_solution_info)
     d.setdefault("get_run_argv", get_run_argv)
     d.setdefault("default_testcase_prefix", default_testcase_prefix)
 
@@ -136,8 +130,15 @@ def run_test(cfg, filename, input, output):
     logger.error("[ERR] %s: incorrect output", relative_path(cfg.ROOTDIR,filename))
 
 
+def get_solution_info(cfg, filename):
+    m = re.match(cfg.SOLUTION_PATTERN, relative_path(cfg.SOLUTIONS_DIR, filename))
+    if m is None:
+        return None
+    return m.group('oj'), m.group('problem')
+
+
 def compile_solution(cfg, filename, recompile):
-    info = cfg.get_solution_info(relative_path(cfg.SOLUTIONS_DIR, filename))
+    info = get_solution_info(cfg, filename)
     if info is None:
         return None
 
@@ -159,13 +160,13 @@ def find_solutions(cfg, filename=None):
         for root,dirs,files in os.walk(filename):
             for name in files:
                 fullname = os.path.join(root,name)
-                info = cfg.get_solution_info(relative_path(cfg.SOLUTIONS_DIR, fullname))
+                info = get_solution_info(cfg, fullname)
                 if info:
-                    yield os.path.abspath(fullname), info
+                    yield fullname, info
     else:
-        info = cfg.get_solution_info(relative_path(cfg.SOLUTIONS_DIR, filename))
+        info = get_solution_info(cfg, filename)
         if info:
-            yield os.path.abspath(filename), info
+            yield filename, info
 
 
 def _find_testcases(dirname, basename):
@@ -227,7 +228,7 @@ def find_testcases(cfg, oj, problem):
 
 
 def generate_submission(cfg, filename):
-    info = cfg.get_solution_info(relative_path(cfg.SOLUTIONS_DIR, filename))
+    info = get_solution_info(cfg, filename)
     if info is None:
         return None
 
@@ -262,7 +263,7 @@ def submit_solution(cfg, oj, problem, filename, wait=False):
     compiler, code = submission
     token = client.submit(problem, compilers[compiler], code)
 
-    if token is None:
+    if not token:
         logger.error("[ERR] %s: submission failed", relative_path(cfg.ROOTDIR, filename))
         return None
 

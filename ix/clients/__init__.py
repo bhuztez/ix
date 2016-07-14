@@ -1,8 +1,32 @@
+import sys
 from functools import wraps
 from importlib import import_module
 from urllib.parse import urlparse, urlencode
 from http.client import HTTPConnection, HTTPSConnection
 from collections import namedtuple
+from email.message import Message
+
+__version__ = ".".join(sys.version.split(".",2)[:2])
+
+
+class Form(Message):
+
+    def __init__(self):
+        Message.__init__(self)
+        self.add_header('Content-Type', 'multipart/form-data')
+        self._payload = []
+
+    def _write_headers(self, _generator):
+        # skip headers
+        pass
+
+
+class Field(Message):
+
+    def __init__(self,name,text):
+        Message.__init__(self)
+        self.add_header('Content-Disposition','form-data',name=name)
+        self.set_payload(text,None)
 
 
 def login_required(func):
@@ -30,6 +54,7 @@ Connections = {
 def request(client, method, url, body=None, headers=None):
     headers = headers or {}
     headers['Connection'] = 'close'
+    headers.setdefault('User-Agent', 'Python-urllib/' + __version__)
 
     o = urlparse(url)
     host, _, port = o.netloc.partition(":")
@@ -111,11 +136,23 @@ class Client:
         headers['Content-Type'] = 'application/x-www-form-urlencoded'
         return self.post(url, urlencode(data).encode("utf-8"), headers, request)
 
+    def post_multipart_form(self, url, data, headers=None, request=request):
+        headers = headers or {}
+        form = Form()
+        for name,value in data.items():
+            if isinstance(value,bytes):
+                form.attach(Field(name,value))
+            else:
+                form.attach(Field(name,str(value).encode('utf-8')))
+        data = form.as_string()
+        headers['Content-Type'] = form['Content-Type']
+        return self.post(url, data.encode('utf-8'), headers, request)
+
     def fetch(self, problem):
         return self.mod.fetch(self, problem)
 
-    def submit(self, problem, language, code):
-        return self.mod.submit(self, problem, language, code)
+    def submit(self, problem, compiler, code):
+        return self.mod.submit(self, problem, compiler, code)
 
     def check(self, problem, token):
         return self.mod.check(self, problem, token)

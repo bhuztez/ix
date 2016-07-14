@@ -64,7 +64,6 @@ command = Command(parser)
     argument("filename", help="filename"))
 def run(cfg, filename, recompile=False):
     """run solution"""
-    filename = os.path.abspath(filename)
     target = yield compile_solution(cfg, filename, recompile)
     if target is None:
         return
@@ -93,7 +92,6 @@ def test(cfg, filename=None, recompile=False):
     argument("filename", nargs='?', help="filename"))
 def generate(cfg, filename=None, wait=False):
     """generate code to submit"""
-    filename = os.path.abspath(filename)
     code = yield generate_submission(cfg, filename)
     print(code)
 
