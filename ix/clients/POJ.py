@@ -28,6 +28,13 @@ def is_post_success(status, headers):
 
 
 def login(client):
+    if "cookie" not in client.credential:
+        status, headers, body = client.get(
+            "http://poj.org/",
+            request = request_with_credential)
+        if status != 200:
+            return None
+
     status, headers, body = client.post_form(
         "http://poj.org/login",
         { USER: client.credential[USER],
@@ -44,7 +51,7 @@ def login(client):
         request=request_with_credential)
 
     if status != 200:
-        return False
+        return None
     if body.startswith(b"<form method=POST action=login>"):
         return False
 

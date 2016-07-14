@@ -26,7 +26,7 @@ get_compile_argv(filename) (NO DEFAULT)
   return argv, target if compilation required
   return None if it is a script
 
-prepare_submission(compilers, code) (NO_DEFAULT)
+prepare_submission(compilers, filename) (NO_DEFAULT)
   return compiler, code
   return None if no suitable compiler found
 

@@ -33,15 +33,23 @@ def default_testcase_prefix(oj, problem):
     return os.path.join(oj, problem)
 
 
-def load_config_file(rootdir, filename, no_skip):
+def load_config_file(rootdir, filename, fallback):
     cfg = ModuleType("ixcfg")
     cfg.ROOTDIR = rootdir
 
     d = cfg.__dict__
+    if filename is not None or os.path.exists(fallback):
+        if filename is None:
+            filename = fallback
 
-    if os.path.exists(filename) or no_skip:
         with open(filename, 'r') as f:
             exec(f.read(), d)
+
+    return cfg
+
+
+def init_config(cfg):
+    d = cfg.__dict__
 
     d.setdefault("VERBOSE", os.environ.get("VERBOSE", "0").lower() in ("true", "on", "1"))
     d.setdefault("NO_ASK", os.environ.get("NOASK", "0").lower() in ("true", "on", "1"))
@@ -138,10 +146,6 @@ def get_solution_info(cfg, filename):
 
 
 def compile_solution(cfg, filename, recompile):
-    info = get_solution_info(cfg, filename)
-    if info is None:
-        return None
-
     argv = cfg.get_compile_argv(filename)
     if argv is None:
         return filename
@@ -237,10 +241,7 @@ def generate_submission(cfg, filename):
     oj, problem = info
     client = cfg.client_loader.load(oj)
     compilers = client.get_compilers()
-
-    with open(filename, 'r') as f:
-        code = f.read()
-    submission = cfg.prepare_submission(list(compilers.keys()), code)
+    submission = cfg.prepare_submission(list(compilers.keys()), filename)
 
     if submission is None:
         return None
@@ -254,10 +255,7 @@ def submit_solution(cfg, oj, problem, filename, wait=False):
 
     client = cfg.client_loader.load(oj)
     compilers = client.get_compilers()
-
-    with open(filename, 'r') as f:
-        code = f.read()
-    submission = cfg.prepare_submission(list(compilers.keys()), code)
+    submission = cfg.prepare_submission(list(compilers.keys()), filename)
 
     if submission is None:
         return None
