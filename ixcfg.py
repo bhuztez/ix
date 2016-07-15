@@ -1,10 +1,10 @@
+from ix.utils import replace_ext
 import os.path
 
 SOLUTION_PATTERN = r'^(?P<oj>\w+)(?:/.*)?/(?P<problem>[A-Za-z0-9_\-]+)\.c$'
 
-
 def get_compile_argv(filename):
-    target = os.path.splitext(filename)[0]+".elf"
+    target = replace_ext(filename, "elf")
     return ['gcc', '-Wall','-Wextra','-Werror','-o', target, filename], target
 
 

@@ -82,8 +82,8 @@ def relative_path(basedir, filename):
         return filename
 
 
-def compile_file(cfg, argv, source, target=None):
-    logger.info("[COMPILE] %s", relative_path(cfg.ROOTDIR, source))
+def compile_file(ROOTDIR, argv, source, target=None):
+    logger.info("[COMPILE] %s", relative_path(ROOTDIR, source))
 
     logger.debug(quote_argv(argv))
 
@@ -96,7 +96,7 @@ def compile_file(cfg, argv, source, target=None):
         else:
             return result[0]
 
-    logger.error("[ERROR] %s: compilation failed", relative_path(cfg.ROOTDIR, source))
+    logger.error("[ERROR] %s: compilation failed", relative_path(ROOTDIR, source))
 
 
 def run_file(cfg, filename):
@@ -154,7 +154,7 @@ def compile_solution(cfg, filename, recompile):
     if not (recompile or cfg.has_to_recompile(filename, target)):
         return target
 
-    return compile_file(cfg, argv, filename, target)
+    return compile_file(cfg.ROOTDIR, argv, filename, target)
 
 
 def find_solutions(cfg, filename=None):
