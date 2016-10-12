@@ -17,6 +17,10 @@ COMPILERS = {
 }
 
 
+def authentication(client):
+    return "Basic " + b64encode((client.credential[USER]+":"+client.credential[PASS]).encode("utf-8")).decode("utf-8").strip()
+
+
 def login(client):
     status,headers,body = client.post_form(
         "https://www.hackerrank.com/auth/login",
@@ -53,8 +57,7 @@ def submit(client, problem, compiler, code):
         {"code": code,
          "language": compiler,
          "contest_slug": "master"},
-        headers={
-            "Authorization": "Basic " + b64encode((client.credential[USER]+":"+client.credential[PASS]).encode("utf-8")).decode("utf-8").strip()})
+        headers={"Authorization": authentication(client)})
 
     if status != 200:
         return False
@@ -67,8 +70,11 @@ def submit(client, problem, compiler, code):
     return str(data["model"]["id"])
 
 
+@login_required
 def check(client, problem, token):
-    status,headers,body = client.get("https://www.hackerrank.com/rest/contests/master/submissions/" + token)
+    status,headers,body = client.get(
+        "https://www.hackerrank.com/rest/contests/master/submissions/" + token,
+        headers={"Authorization": authentication(client)})
 
     if status != 200:
         return False
