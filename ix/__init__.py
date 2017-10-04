@@ -16,6 +16,8 @@ else:
     def quote_argv(argv):
         return " ".join(quote(a) for a in argv)
 
+from .escape import escape_source
+
 
 def has_to_recompile(source, target):
     if not os.path.exists(target):
@@ -247,6 +249,9 @@ def generate_submission(cfg, filename):
         return None
 
     compiler, code = submission
+    if type(code) == bytes and compiler.lang == 'C':
+        code = escape_source(code, chkstk=compiler.os=="Windows").decode("utf-8")
+
     return code
 
 
@@ -261,6 +266,9 @@ def submit_solution(cfg, oj, problem, filename, wait=False):
         return None
 
     compiler, code = submission
+    if type(code) == bytes and compiler.lang == 'C':
+        code = escape_source(code, chkstk=compiler.os=="Windows").decode("utf-8")
+
     token = client.submit(problem, compilers[compiler], code)
 
     if not token:
