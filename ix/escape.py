@@ -296,7 +296,7 @@ def rule_length(endpoint,length):
     return acc
 
 
-CHARS=b"_abcdefghijlkmnopqrstvwxyzABCDEFGHIJKMNOPQRSTVWXYZ"
+CHARS=b"_abcdefghijlkmnopqrstvwxyzABCDEFGHIJKMNOPQSTVWXYZ"
 
 
 def assign_token(endpoint,rules,counts):
