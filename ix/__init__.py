@@ -43,6 +43,15 @@ def load_config_file(rootdir, filename, fallback):
     cfg.get_run_argv = get_run_argv
     cfg.default_testcase_prefix = default_testcase_prefix
 
+    def get_generated_files(filename):
+        argv = cfg.get_compile_argv(filename)
+        if argv is None:
+            return []
+        _, target = argv
+        return [target]
+
+    cfg.get_generated_files = get_generated_files
+
     d = cfg.__dict__
     if filename is not None or os.path.exists(fallback):
         if filename is None:
@@ -301,5 +310,16 @@ def submit_solution(cfg, oj, problem, filename, wait=False):
 
         if not result[0]:
             logger.info("[SUBMIT] %s: \x1b[33m%s\x1b[39m", relative_path(cfg.ROOTDIR, filename), result[1])
+
+    return True
+
+
+def clean_generated_files(cfg, filename):
+    files = [n for n in cfg.list_generated_files(filename) if os.path.exists(n)]
+    if files:
+        logger.info("[CLEAN] %s", relative_path(cfg.ROOTDIR, filename))
+    for target in files:
+        logger.debug("[REMOVE] %s", relative_path(cfg.ROOTDIR, target))
+        os.remove(target)
 
     return True

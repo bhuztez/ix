@@ -15,7 +15,8 @@ logger.addHandler(handler)
 from . import (
     compile_solution, run_file, run_test,
     find_solutions, find_testcases,
-    generate_submission, submit_solution
+    generate_submission, submit_solution,
+    clean_generated_files
 )
 
 from .clients import ClientLoader
@@ -110,19 +111,13 @@ def submit(cfg, filename=None, wait=False):
 def clean(cfg, filename=None, wait=False):
     """removes generated files"""
     for filename, (oj, problem) in find_solutions(cfg, filename):
-        argv = cfg.get_compile_argv(filename)
-        if argv is None:
-            continue
-        argv, target = argv
-        if os.path.exists(target):
-            os.remove(target)
+        yield clean_generated_files(cfg, filename)
 
 
 @command()
 def help(cfg):
     """Print help message"""
     parser.print_help()
-
 
 
 def main(cmd, args, cfg):

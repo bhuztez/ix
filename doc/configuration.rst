@@ -128,6 +128,20 @@ Optional
             return [filename]
 
 
+.. py:function:: list_generated_files(filename)
+
+    Return a list of files related to a solution, they will be removed when running clean
+
+    For example,
+
+    .. code-block:: python3
+
+        from ix.utils import replace_ext
+
+        def list_generated_files(filename):
+            return [replace_ext(filename, ".elf")]
+
+
 .. py:function:: default_testcase_prefix(oj, problem)
 
     Return prefix of filename of test case. Filename of inputs would be :code:`${prefix}.in(.${n})`, filename of outputs would be :code:`${prefix}.out(.${n})`.
