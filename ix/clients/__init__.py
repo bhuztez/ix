@@ -157,14 +157,14 @@ class Client:
     def fetch(self, problem):
         return self.mod.fetch(self, problem)
 
-    def submit(self, problem, compiler, code):
-        return self.mod.submit(self, problem, compiler, code)
+    def submit(self, problem, env, code):
+        return self.mod.submit(self, problem, env, code)
 
     def check(self, problem, token):
         return self.mod.check(self, problem, token)
 
-    def get_compilers(self):
-        return self.mod.COMPILERS
+    def get_envs(self):
+        return self.mod.ENVS
 
 
 class ClientLoader:
@@ -185,4 +185,4 @@ class ClientLoader:
             self.clients[name] = client
         return client
 
-Compiler = namedtuple('Compiler', ['name','ver','os','arch','lang','lang_ver'])
+Env = namedtuple('Env', ['name','ver','os','arch','lang','lang_ver'])

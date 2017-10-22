@@ -1,6 +1,6 @@
 import lxml.html
 from base64 import b64encode
-from . import login_required, request, with_cookie, Compiler
+from . import login_required, request, with_cookie, Env
 
 USER = "user_id1"
 PASS = "password1"
@@ -11,14 +11,14 @@ CREDENTIAL_INPUT_FIELDS = (
     (PASS, "Password", True),
 )
 
-COMPILERS = {
-    Compiler(name="MinGW",      ver="4.4.0", os="Windows", arch="x86", lang="C++",     lang_ver="C++03")       : "0",
-    Compiler(name="MinGW",      ver="4.4.0", os="Windows", arch="x86", lang="C",       lang_ver="C99")         : "1",
-    Compiler(name="JDK",        ver="6",     os="Windows", arch="x86", lang="Java",    lang_ver="Java 6")      : "2",
-    Compiler(name="FreePascal", ver="2.2.0", os="Windows", arch="x86", lang="Pascal",  lang_ver="Free Pascal") : "3",
-    Compiler(name="MSVC",       ver="2008",  os="Windows", arch="x86", lang="C++",     lang_ver="C++03")       : "4",
-    Compiler(name="MSVC",       ver="2008",  os="Windows", arch="x86", lang="C",       lang_ver="C99")         : "5",
-    Compiler(name="MinGW",      ver="4.4.0", os="Windows", arch="x86", lang="Fortran", lang_ver="Fortran 95")  : "6",
+ENVS = {
+    Env(name="MinGW",      ver="4.4.0", os="Windows", arch="x86", lang="C++",     lang_ver="C++03")       : "0",
+    Env(name="MinGW",      ver="4.4.0", os="Windows", arch="x86", lang="C",       lang_ver="C99")         : "1",
+    Env(name="JDK",        ver="6",     os="Windows", arch="x86", lang="Java",    lang_ver="Java 6")      : "2",
+    Env(name="FreePascal", ver="2.2.0", os="Windows", arch="x86", lang="Pascal",  lang_ver="Free Pascal") : "3",
+    Env(name="MSVC",       ver="2008",  os="Windows", arch="x86", lang="C++",     lang_ver="C++03")       : "4",
+    Env(name="MSVC",       ver="2008",  os="Windows", arch="x86", lang="C",       lang_ver="C99")         : "5",
+    Env(name="MinGW",      ver="4.4.0", os="Windows", arch="x86", lang="Fortran", lang_ver="Fortran 95")  : "6",
 }
 
 request_with_credential = with_cookie("cookie")(request)
@@ -68,12 +68,12 @@ def fetch(client, problem):
 
 
 @login_required
-def submit(client, problem, compiler, code):
+def submit(client, problem, env, code):
     status,headers,body = client.post_form(
         "http://poj.org/submit",
         { "source": b64encode(code.encode("utf-8")),
           "problem_id": problem,
-          "language": compiler,
+          "language": env,
           "submit": "Submit",
           "encoded": "1"},
         request=request_with_credential)
@@ -83,7 +83,7 @@ def submit(client, problem, compiler, code):
             return None
         return False
 
-    return {"user_id": client.credential[USER], "language": compiler}
+    return {"user_id": client.credential[USER], "language": env}
 
 
 def check(client, problem, token):

@@ -1,4 +1,5 @@
 __pycache__/
+doc/_build/
 *.pyc
 *.pyo
 *.elf

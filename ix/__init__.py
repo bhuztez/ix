@@ -39,6 +39,10 @@ def load_config_file(rootdir, filename, fallback):
     cfg = ModuleType("ixcfg")
     cfg.ROOTDIR = rootdir
 
+    cfg.has_to_recompile = has_to_recompile
+    cfg.get_run_argv = get_run_argv
+    cfg.default_testcase_prefix = default_testcase_prefix
+
     d = cfg.__dict__
     if filename is not None or os.path.exists(fallback):
         if filename is None:
@@ -52,15 +56,12 @@ def load_config_file(rootdir, filename, fallback):
 
 def init_config(cfg):
     d = cfg.__dict__
+    d.setdefault("SOLUTIONS_DIR", os.path.join(cfg.ROOTDIR, "solutions"))
+    d.setdefault("TESTCASES_DIR", os.path.join(cfg.ROOTDIR, "testcases"))
 
     d.setdefault("VERBOSE", os.environ.get("VERBOSE", "0").lower() in ("true", "on", "1"))
     d.setdefault("NO_ASK", os.environ.get("NOASK", "0").lower() in ("true", "on", "1"))
-    d.setdefault("SOLUTIONS_DIR", os.path.join(cfg.ROOTDIR, "solutions"))
-    d.setdefault("TESTCASES_DIR", os.path.join(cfg.ROOTDIR, "testcases"))
     d.setdefault("LOGIN_MAX_RETRY", 2)
-    d.setdefault("has_to_recompile", has_to_recompile)
-    d.setdefault("get_run_argv", get_run_argv)
-    d.setdefault("default_testcase_prefix", default_testcase_prefix)
 
     if platform.system() not in ('Windows','Java'):
         if not hasattr(cfg, "CREDENTIAL_READER"):
@@ -235,22 +236,31 @@ def find_testcases(cfg, oj, problem):
     logger.error("[ERR] %s %s: no testcase found", oj, problem)
 
 
+def _generate_submission(cfg, oj, problem, filename):
+    client = cfg.client_loader.load(oj)
+    envs = client.get_envs()
+    submission = cfg.prepare_submission(list(envs.keys()), filename)
+
+    if submission is None:
+        return None
+
+    env, code = submission
+    if type(code) == bytes and env.lang == 'C':
+        code = escape_source(code, chkstk=env.os=="Windows").decode("utf-8")
+
+    return client, envs[env], code
+
+
 def generate_submission(cfg, filename):
     info = get_solution_info(cfg, filename)
     if info is None:
         return None
 
     oj, problem = info
-    client = cfg.client_loader.load(oj)
-    compilers = client.get_compilers()
-    submission = cfg.prepare_submission(list(compilers.keys()), filename)
-
+    submission = _generate_submission(cfg, oj, problem, filename)
     if submission is None:
         return None
-
-    compiler, code = submission
-    if type(code) == bytes and compiler.lang == 'C':
-        code = escape_source(code, chkstk=compiler.os=="Windows").decode("utf-8")
+    _, _, code = submission
 
     return code
 
@@ -258,18 +268,12 @@ def generate_submission(cfg, filename):
 def submit_solution(cfg, oj, problem, filename, wait=False):
     logger.info("[SUBMIT] %s", relative_path(cfg.ROOTDIR, filename))
 
-    client = cfg.client_loader.load(oj)
-    compilers = client.get_compilers()
-    submission = cfg.prepare_submission(list(compilers.keys()), filename)
-
+    submission = _generate_submission(cfg, oj, problem, filename)
     if submission is None:
         return None
+    client, env, code = submission
 
-    compiler, code = submission
-    if type(code) == bytes and compiler.lang == 'C':
-        code = escape_source(code, chkstk=compiler.os=="Windows").decode("utf-8")
-
-    token = client.submit(problem, compilers[compiler], code)
+    token = client.submit(problem, env, code)
 
     if not token:
         logger.error("[ERR] %s: submission failed", relative_path(cfg.ROOTDIR, filename))

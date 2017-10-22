@@ -1,6 +1,6 @@
 import lxml.html
 import json
-from . import login_required, request, with_cookie, Compiler
+from . import login_required, request, with_cookie, Env
 
 USER = "login_user"
 PASS = "password"
@@ -11,14 +11,14 @@ CREDENTIAL_INPUT_FIELDS = (
     (PASS, "Password", True),
 )
 
-COMPILERS = {
-    Compiler(name="GCC",   ver="5.1",   os="Linux", arch="x86", lang="C++", lang_ver="C++03") : "1",
-    Compiler(name="GCC",   ver="5.1",   os="Linux", arch="x86", lang="C",   lang_ver="C")     : "11",
-    Compiler(name="GCC",   ver="5.1",   os="Linux", arch="x86", lang="C",   lang_ver="C99")   : "34",
-    Compiler(name="GCC",   ver="4.3.2", os="Linux", arch="x86", lang="C++", lang_ver="C++03") : "41",
-    Compiler(name="GCC",   ver="4.3.2", os="Linux", arch="x86", lang="C++", lang_ver="C++14") : "44",
-    Compiler(name="clang", ver="3.7",   os="Linux", arch="x86", lang="C",   lang_ver="C11")   : "81",
-    Compiler(name="clang", ver="3.7",   os="Linux", arch="x86", lang="C++", lang_ver="C++03") : "82",
+ENVS = {
+    Env(name="GCC",   ver="5.1",   os="Linux", arch="x86", lang="C++", lang_ver="C++03") : "1",
+    Env(name="GCC",   ver="5.1",   os="Linux", arch="x86", lang="C",   lang_ver="ANSI C")     : "11",
+    Env(name="GCC",   ver="5.1",   os="Linux", arch="x86", lang="C",   lang_ver="C99")   : "34",
+    Env(name="GCC",   ver="4.3.2", os="Linux", arch="x86", lang="C++", lang_ver="C++03") : "41",
+    Env(name="GCC",   ver="4.3.2", os="Linux", arch="x86", lang="C++", lang_ver="C++14") : "44",
+    Env(name="clang", ver="3.7",   os="Linux", arch="x86", lang="C",   lang_ver="C11")   : "81",
+    Env(name="clang", ver="3.7",   os="Linux", arch="x86", lang="C++", lang_ver="C++03") : "82",
 }
 
 
@@ -45,11 +45,11 @@ def fetch(client, problem):
 
 
 @login_required
-def submit(client, problem, compiler, code):
+def submit(client, problem, env, code):
     status,headers,body = client.post_multipart_form(
         "http://www.spoj.com/submit/complete/",
         { "file": code,
-          "lang": compiler,
+          "lang": env,
           "problemcode": problem,
           "submit": "Submit!"},
         request = request_with_credential)

@@ -1,7 +1,7 @@
 import lxml.html
 from base64 import b64encode
 import json
-from . import login_required, request, Compiler
+from . import login_required, request, Env
 
 USER = "login"
 PASS = "password"
@@ -12,8 +12,8 @@ CREDENTIAL_INPUT_FIELDS = (
     (PASS, "Password", True),
 )
 
-COMPILERS = {
-    Compiler(name="GCC", ver="4.9.2", os="Linux", arch="x86_64", lang="C", lang_ver="C99") : "c",
+ENVS = {
+    Env(name="GCC", ver="4.9.2", os="Linux", arch="x86_64", lang="C", lang_ver="C99") : "c",
 }
 
 
@@ -51,11 +51,11 @@ def fetch(client, problem):
 
 
 @login_required
-def submit(client, problem, compiler, code):
+def submit(client, problem, env, code):
     status,headers,body = client.post_json(
         "https://www.hackerrank.com/rest/contests/master/challenges/"+problem+"/submissions?",
         {"code": code,
-         "language": compiler,
+         "language": env,
          "contest_slug": "master"},
         headers={"Authorization": authentication(client)})
 

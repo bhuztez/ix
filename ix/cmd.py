@@ -53,15 +53,15 @@ class Command(object):
 
 parser = ArgumentParser(description="IX")
 parser.add_argument("-k","--keep-going",action="store_true",default=False,help="keep going when some task failed")
-parser.add_argument("-v","--verbose",action="store_true",default=False)
+parser.add_argument("-v","--verbose",action="store_true",default=False,help="show verbose outputs")
 parser.add_argument("--no-ask",action="store_true",default=False,help="do not ask for password")
-parser.add_argument("-c","--config",metavar="CFG",help="path to config file")
+parser.add_argument("-c","--config",metavar="CFG",help="use config file at CFG")
 command = Command(parser)
 
 
 @command(
-    argument("-r", "--recompile", action="store_true"),
-    argument("filename", help="filename"))
+    argument("-r", "--recompile", action="store_true", help="recompile if already compiled before run"),
+    argument("filename", help="path to solution"))
 def run(cfg, filename, recompile=False):
     """run solution"""
     target = yield compile_solution(cfg, filename, recompile)
@@ -71,8 +71,8 @@ def run(cfg, filename, recompile=False):
 
 
 @command(
-    argument("-r", "--recompile", action="store_true"),
-    argument("filename", nargs='?', help="filename"))
+    argument("-r", "--recompile", action="store_true", help="recompile if already compiled before test"),
+    argument("filename", nargs='?', help="path to solution"))
 def test(cfg, filename=None, recompile=False):
     """check solution against sample testcases"""
     for filename, (oj, problem) in find_solutions(cfg, filename):
@@ -89,26 +89,26 @@ def test(cfg, filename=None, recompile=False):
             yield run_test(cfg, target, input, output)
 
 @command(
-    argument("filename", nargs='?', help="filename"))
+    argument("filename", nargs='?', help="path to solution"))
 def generate(cfg, filename=None, wait=False):
-    """generate code to submit"""
+    """print the code to be submitted"""
     code = yield generate_submission(cfg, filename)
     print(code)
 
 
 @command(
-    argument("-w","--wait",action="store_true",default=False),
-    argument("filename", nargs='?', help="filename"))
+    argument("-w","--wait",action="store_true",default=False, help="wait until verdict"),
+    argument("filename", nargs='?', help="path to solution"))
 def submit(cfg, filename=None, wait=False):
-    """submit code"""
+    """submit solution"""
     for filename, (oj, problem) in find_solutions(cfg, filename):
         yield submit_solution(cfg, oj, problem, filename, wait)
 
 
 @command(
-    argument("filename", nargs='?', help="filename"))
+    argument("filename", nargs='?', help="path to solution"))
 def clean(cfg, filename=None, wait=False):
-    """clean"""
+    """removes generated files"""
     for filename, (oj, problem) in find_solutions(cfg, filename):
         argv = cfg.get_compile_argv(filename)
         if argv is None:

@@ -1,6 +1,6 @@
 import lxml.html
 from base64 import b64encode
-from . import login_required, request, with_cookie, Compiler
+from . import login_required, request, with_cookie, Env
 
 USER = "username"
 PASS = "passwd"
@@ -11,13 +11,13 @@ CREDENTIAL_INPUT_FIELDS = (
     (PASS, "Password", True),
 )
 
-COMPILERS = {
-    Compiler(name="GCC",        ver="5.3.0", os="Linux", arch="x86_64", lang="C",       lang_ver="ANSI C")      : "1",
-    Compiler(name="OpenJDK",    ver="1.8.0", os="Linux", arch="x86_64", lang="Java",    lang_ver="Java 8")      : "2",
-    Compiler(name="GCC",        ver="5.3.0", os="Linux", arch="x86_64", lang="C++",     lang_ver="C++03")       : "3",
-    Compiler(name="FreePascal", ver="3.0.0", os="Linux", arch="x86_64", lang="Pascal",  lang_ver="FreePascal")  : "4",
-    Compiler(name="GCC",        ver="5.3.0", os="Linux", arch="x86_64", lang="C++",     lang_ver="C++11")       : "5",
-    Compiler(name="CPython",    ver="3.5.1", os="Linux", arch="x86_64", lang="Python",  lang_ver="Python 3.5")  : "6",
+ENVS = {
+    Env(name="GCC",        ver="5.3.0", os="Linux", arch="x86_64", lang="C",       lang_ver="ANSI C")      : "1",
+    Env(name="OpenJDK",    ver="1.8.0", os="Linux", arch="x86_64", lang="Java",    lang_ver="Java 8")      : "2",
+    Env(name="GCC",        ver="5.3.0", os="Linux", arch="x86_64", lang="C++",     lang_ver="C++03")       : "3",
+    Env(name="FreePascal", ver="3.0.0", os="Linux", arch="x86_64", lang="Pascal",  lang_ver="FreePascal")  : "4",
+    Env(name="GCC",        ver="5.3.0", os="Linux", arch="x86_64", lang="C++",     lang_ver="C++11")       : "5",
+    Env(name="CPython",    ver="3.5.1", os="Linux", arch="x86_64", lang="Python",  lang_ver="Python 3.5")  : "6",
 }
 
 request_with_credential = with_cookie("cookie")(request)
@@ -62,13 +62,13 @@ def fetch(client, problem):
 
 
 @login_required
-def submit(client, problem, compiler, code):
+def submit(client, problem, env, code):
     status, headers, body = client.post_multipart_form(
         "https://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=25&page=save_submission",
         { "problemid": "",
           "category": "",
           "localid": problem,
-          "language": compiler,
+          "language": env,
           "code": code},
         request=request_with_credential)
 

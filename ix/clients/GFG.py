@@ -1,5 +1,5 @@
 import json
-from . import login_required, request, with_cookie, Compiler
+from . import login_required, request, with_cookie, Env
 
 USER = "user"
 PASS = "pass"
@@ -10,9 +10,9 @@ CREDENTIAL_INPUT_FIELDS = (
     (PASS, "Password", True),
 )
 
-COMPILERS = {
-    Compiler(name="GCC", ver="4.5", os="Linux", arch="x86_64", lang="C", lang_ver="C11") : "c",
-    Compiler(name="GCC", ver="4.5", os="Linux", arch="x86_64", lang="C++", lang_ver="C++11") : "cpp",
+ENVS = {
+    Env(name="GCC", ver="4.5", os="Linux", arch="x86_64", lang="C", lang_ver="C11") : "c",
+    Env(name="GCC", ver="4.5", os="Linux", arch="x86_64", lang="C++", lang_ver="C++11") : "cpp",
 }
 
 request_with_credential = with_cookie("cookie")(request)
@@ -38,15 +38,18 @@ def fetch(client,problem):
 
 
 @login_required
-def submit(client, problem, compiler, code):
+def submit(client, problem, env, code):
     status,headers,body = client.post_form(
         "http://practice.geeksforgeeks.org/ajax/solutionChecking.php",
-        {"lang": compiler,
+        {"lang": env,
          "pid": problem,
          "code": code},
         request = request_with_credential)
     if status != 200:
         return False
+
+    if len(body) == 0:
+        return None
 
     if body.startswith(b"Correct Answer."):
         return (True, "Correct", True)
