@@ -89,6 +89,7 @@ def with_cookie(field):
                 StringIO("#LWP-Cookies-2.0\n" + client.credential.get(field,'')),
                 "cookies.txt",True,True)
             req = Request(url, body, headers or {}, method=method)
+            cookiejar.clear_expired_cookies()
             cookiejar.add_cookie_header(req)
             status, headers, body = request(client,req.method,req.full_url,req.data,dict(req.header_items()))
             response = addinfourl(None, headers, req.full_url, status)
@@ -133,7 +134,7 @@ class Client:
         return request(self, 'POST', url, body, headers)
 
     def post_json(self, url, data, headers=None, request=request):
-        headers = headers or None
+        headers = headers or {}
         headers['Content-Type'] = 'application/json; charset=utf-8'
         return request(self, 'POST', url, json.dumps(data), headers)
 
