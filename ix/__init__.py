@@ -112,7 +112,7 @@ def compile_file(ROOTDIR, argv, source, target=None):
 
 
 def run_file(cfg, filename):
-    argv = cfg.get_run_argv(os.path.relpath(filename))
+    argv = cfg.get_run_argv(relative_path(cfg.ROOTDIR, filename))
     logger.debug(quote_argv(argv))
     p = Popen(argv)
     if p.wait() == 0:
@@ -124,13 +124,15 @@ def run_test(cfg, filename, input, output):
     from io import StringIO
     logger.info("[RUN] %s", relative_path(cfg.ROOTDIR,input))
 
+    argv = cfg.get_run_argv(relative_path(cfg.ROOTDIR, filename))
+
     logger.debug("%s < %s | diff - %s" %(
-        quote_argv([relative_path(cfg.ROOTDIR, filename)]),
+        quote_argv(argv),
         quote_argv([relative_path(cfg.ROOTDIR, input)]),
         quote_argv([relative_path(cfg.ROOTDIR, output)])))
 
     with open(input,'rb') as f:
-        p = Popen([filename],stdin=f,stdout=PIPE)
+        p = Popen(argv,stdin=f,stdout=PIPE)
 
     (got,_)= p.communicate()
 
