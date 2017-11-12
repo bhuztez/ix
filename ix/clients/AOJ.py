@@ -2,6 +2,7 @@ import json
 from http.cookiejar import LWPCookieJar
 from io import StringIO
 from urllib.parse import unquote
+from itertools import count
 from . import login_required, request, with_cookie, Env
 
 USER = "loginUserID"
@@ -46,24 +47,31 @@ def login(client):
 
 
 def fetch(client, problem):
-    status,headers,body = client.get(
-        "https://judgedat.u-aizu.ac.jp/testcases/{}/header".format(problem))
-
-    if status != 200:
-        return False
-
     testcases = []
 
-    header = json.loads(body.decode("utf-8"))
-
-    for case in header["headers"]:
+    for case in count(1):
         status,headers,body = client.get(
-            "https://judgedat.u-aizu.ac.jp/testcases/{}/{}".format(problem, case["serial"]))
+            "http://analytic.u-aizu.ac.jp:8080/aoj/testcase.jsp",
+            {"id": problem, "case": case, "type": "in"})
+        if status == 500:
+            break
         if status != 200:
             return False
 
-        data = json.loads(body.decode("utf-8"))
-        testcases.append({"in": data["in"], "out": data["out"]})
+        data = {"in": body.decode("utf-8")}
+
+        if case == 2:
+            if data["in"] == testcases[0]["in"]:
+                break
+
+        status,headers,body = client.get(
+            "http://analytic.u-aizu.ac.jp:8080/aoj/testcase.jsp",
+            {"id": problem, "case": case, "type": "out"})
+        if status != 200:
+            return False
+
+        data["out"] = body.decode("utf-8")
+        testcases.append(data)
 
     return testcases
 
