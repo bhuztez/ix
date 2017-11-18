@@ -1,4 +1,5 @@
 import json
+import websocket
 from http.cookiejar import LWPCookieJar
 from io import StringIO
 from urllib.parse import unquote
@@ -85,6 +86,9 @@ def submit(client, problem, env, code):
     else:
         return None
 
+    ws = websocket.WebSocket()
+    ws.connect("ws://ionazn.org/status")
+
     status,headers,body = client.post_form(
         "http://judge.u-aizu.ac.jp/onlinejudge/webservice/submit",
         { "sourceCode": code,
@@ -101,8 +105,55 @@ def submit(client, problem, env, code):
     if body != b'0\n':
         return None
 
-    return True
+    return {"socket": ws, "lang": env}
+
+
+STATUS = {
+    -1: "Judge Not Available",
+    0: "Compile Error",
+    1: "Wrong Answer",
+    2: "Time Limit Exceeded",
+    3: "Memory Limit Exceeded",
+    4: "Accepted",
+    5: "Waiting Judge",
+    6: "Output Limit Exceeded",
+    7: "Runtime Error",
+    8: "Presentation Error",
+    9: "Running",
+}
 
 
 def check(client, problem, token):
-    return False
+    ws = token["socket"]
+    lang = token["lang"]
+    user = client.credential[USER]
+
+    while True:
+        data = json.loads(ws.recv())
+        if data['userID'] != user:
+            continue
+        if data['lang'] != lang:
+            continue
+        if problem != "{}_{}".format(data['lessonID'], data['problemID']):
+            continue
+
+        runID = token.get("runID", None)
+
+        if runID is None:
+            runID = data['runID']
+            token["runID"] = runID
+
+        if data['runID'] != runID:
+            continue
+
+        status = data["status"]
+        message = STATUS.get(status, None)
+
+        if status in (5, 9):
+            return (False, message, False)
+        elif status == 4:
+            return (True, message, True, 'Memory: {memory}, Time: {cputime}, Length: {code}'.format(**data))
+        elif status >= 0:
+            return (True, message, False)
+
+        return False
