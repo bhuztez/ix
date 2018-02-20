@@ -1,13 +1,8 @@
 import json
-import websocket
-from http.cookiejar import LWPCookieJar
-from io import StringIO
-from urllib.parse import unquote
-from itertools import count
 from . import login_required, request, with_cookie, Env
 
-USER = "loginUserID"
-PASS = "loginPassword"
+USER = "id"
+PASS = "password"
 
 CREDENTIAL_INPUT_TITLE = "AOJ (judge.u-aizu.ac.jp)"
 CREDENTIAL_INPUT_FIELDS = (
@@ -22,90 +17,78 @@ ENVS = {
 request_with_credential = with_cookie("cookie")(request)
 
 
-
-def get_cookies(client,field="cookie"):
-    cookiejar = LWPCookieJar()
-    cookiejar._really_load(
-        StringIO("#LWP-Cookies-2.0\n" + client.credential.get(field,'')),
-        "cookies.txt",True,True)
-    return list(cookiejar)
-
-
 def login(client):
-    status,headers,body = client.post_form(
-        "http://judge.u-aizu.ac.jp/onlinejudge/index.jsp",
+    status,headers,body = client.post_json(
+        "https://judgeapi.u-aizu.ac.jp/session",
         { USER: client.credential[USER],
           PASS: client.credential[PASS]},
         request = request_with_credential)
-    if status != 200:
-        return None
 
-    for cookie in get_cookies(client):
-        if cookie.domain == 'judge.u-aizu.ac.jp' and cookie.name == 'sref':
-            return True
+    if status == 200:
+        return True
 
-    return False
+    if status == 400:
+        return False
+
+    return None
 
 
 def fetch(client, problem):
+    status,headers,body = client.get(
+        "https://judgedat.u-aizu.ac.jp/testcases/{}/header".format(problem))
+
+    if status != 200:
+        return False
+
     testcases = []
 
-    for case in count(1):
+    header = json.loads(body.decode("utf-8"))
+
+    for case in header["headers"]:
         status,headers,body = client.get(
-            "http://analytic.u-aizu.ac.jp:8080/aoj/testcase.jsp",
-            {"id": problem, "case": case, "type": "in"})
-        if status == 500:
-            break
+            "https://judgedat.u-aizu.ac.jp/testcases/{}/{}".format(problem, case["serial"]))
         if status != 200:
             return False
 
-        data = {"in": body.decode("utf-8")}
-
-        if case == 2:
-            if data["in"] == testcases[0]["in"]:
-                break
-
-        status,headers,body = client.get(
-            "http://analytic.u-aizu.ac.jp:8080/aoj/testcase.jsp",
-            {"id": problem, "case": case, "type": "out"})
-        if status != 200:
-            return False
-
-        data["out"] = body.decode("utf-8")
-        testcases.append(data)
+        data = json.loads(body.decode("utf-8"))
+        testcases.append({"in": data["in"], "out": data["out"]})
 
     return testcases
 
 
 @login_required
 def submit(client, problem, env, code):
-    for cookie in get_cookies(client):
-        if cookie.domain == 'judge.u-aizu.ac.jp' and cookie.name == 'sref':
-            epassword = unquote(cookie.value)
-            break
-    else:
-        return None
-
-    ws = websocket.WebSocket()
-    ws.connect("ws://ionazn.org/status")
-
-    status,headers,body = client.post_form(
-        "http://judge.u-aizu.ac.jp/onlinejudge/webservice/submit",
+    status,headers,body = client.post_json(
+        "https://judgeapi.u-aizu.ac.jp/submissions",
         { "sourceCode": code,
           "language": env,
-          "lessonID": problem[:-2],
-          "problemNO": problem[-1],
-          "userID": client.credential[USER],
-          "epassword": epassword,
+          "problemId": problem,
         },
         request = request_with_credential)
+
+
+    if status == 400:
+        return None
+
     if status != 200:
         return False
 
-    if body != b'0\n':
-        return None
+    data = json.loads(body.decode("utf-8"))
+    token = data['token']
 
-    return {"socket": ws, "lang": env}
+    status,headers,body = client.get(
+        "https://judgeapi.u-aizu.ac.jp/submission_records/recent")
+
+    if status != 200:
+        return False
+
+    data = json.loads(body.decode("utf-8"))
+
+    for item in data:
+        if item["token"] == token:
+            return item["judgeId"]
+
+    return False
 
 
 STATUS = {
@@ -124,36 +107,21 @@ STATUS = {
 
 
 def check(client, problem, token):
-    ws = token["socket"]
-    lang = token["lang"]
-    user = client.credential[USER]
+    status,headers,body = client.get(
+        "https://judgeapi.u-aizu.ac.jp/verdicts/{}".format(token))
 
-    while True:
-        data = json.loads(ws.recv())
-        if data['userID'] != user:
-            continue
-        if data['lang'] != lang:
-            continue
-        if problem != "{}_{}".format(data['lessonID'], data['problemID']):
-            continue
-
-        runID = token.get("runID", None)
-
-        if runID is None:
-            runID = data['runID']
-            token["runID"] = runID
-
-        if data['runID'] != runID:
-            continue
-
-        status = data["status"]
-        message = STATUS.get(status, None)
-
-        if status in (5, 9):
-            return (False, message, False)
-        elif status == 4:
-            return (True, message, True, 'Memory: {memory}, Time: {cputime}, Length: {code}'.format(**data))
-        elif status >= 0:
-            return (True, message, False)
-
+    if status != 200:
         return False
+
+    data = json.loads(body.decode('utf-8'))["submissionRecord"]
+    status = data["status"]
+    message = STATUS[status]
+
+    if status in (5, 9):
+        return (False, message, False)
+    elif status == 4:
+        return (True, message, True, 'Memory: {memory}, Time: {cpuTime}, Length: {codeSize}'.format(**data))
+    elif status >= 0:
+        return (True, message, False)
+
+    return False

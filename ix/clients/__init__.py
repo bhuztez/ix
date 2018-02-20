@@ -33,7 +33,7 @@ class Field(Message):
 def login_required(func):
     @wraps(func)
     def wrapper(client, *args, **kwargs):
-        if client.credential:
+        if client.is_credential_valid():
             result = func(client, *args, **kwargs)
             if result is not None:
                 return result
@@ -103,12 +103,16 @@ def with_cookie(field):
 
 class Client:
 
-    def __init__(self, name, mod, credential, read_credential, config):
+    def __init__(self, name, mod, credential, read_credential, required_fields, config):
         self.name = name
         self.mod = mod
         self.credential = credential
         self.read_credential = read_credential
+        self.required_fields = required_fields
         self.config = config
+
+    def is_credential_valid(self):
+        return all(f in self.credential for f in self.required_fields)
 
     def login(self):
         result = True
@@ -182,7 +186,7 @@ class ClientLoader:
             mod = import_module("." + name, __package__)
             credential = self.credential_storage[name]
             read_credential = self.credential_reader.get(mod.CREDENTIAL_INPUT_TITLE, mod.CREDENTIAL_INPUT_FIELDS, credential)
-            client = Client(name, mod, credential, read_credential, self.config)
+            client = Client(name, mod, credential, read_credential, tuple(f[0] for f in mod.CREDENTIAL_INPUT_FIELDS), self.config)
             self.clients[name] = client
         return client
 

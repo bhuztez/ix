@@ -26,6 +26,6 @@ setup(
     author_email = 'bhuztez@gmail.com',
 
     packages = ['ix', 'ix.clients', 'ix.credential', 'ix.credential.readers', 'ix.credential.storages'],
-    install_requires= ['lxml', 'websocket-client'],
+    install_requires= ['lxml'],
     zip_safe = False,
 )

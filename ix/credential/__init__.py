@@ -23,6 +23,7 @@ class Credential:
     def save(self):
         if self.dirty:
             self.storage.save(self.name, self.data)
+            self.dirty = False
 
     def get(self, name, default):
         return self.data.get(name, default)
@@ -39,16 +40,10 @@ class Credential:
 
     def __delitem__(self, name):
         del self.data[name]
+        self.dirty = True
 
     def __contains__(self, name):
         return name in self.data
-
-    def __bool__(self):
-        return bool(self.data)
-
-    def save(self):
-        self.storage.save(self.name, self.data)
-
 
 
 class BaseCredentialStorage:
