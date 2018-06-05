@@ -235,7 +235,7 @@ def find_testcases(cfg, oj, problem):
     client = cfg.client_loader.load(oj)
     result = client.fetch(problem)
 
-    if not result:
+    if result is False:
         return None
 
     save_testcases(prefix, result)
