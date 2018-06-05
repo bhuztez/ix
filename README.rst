@@ -45,10 +45,7 @@ Supported Online Judges
 ============== ====== =======================
 Online Judge   Submit Fetch sample test cases
 ============== ====== =======================
-GeeksForGeeks  Y      N
-HackerRank     Y      Y
-POJ            Y      Y
-SPOJ           Y      Y
-UVa
+`AOJ`__        Y      Y
 ============== ====== =======================
 
+.. __: http://judge.u-aizu.ac.jp/onlinejudge/index.jsp

@@ -32,6 +32,7 @@ def login(client):
 
     return None
 
+LIMITATION = "..... (terminated because of the limitation)\n"
 
 def fetch(client, problem):
     status,headers,body = client.get(
@@ -51,7 +52,8 @@ def fetch(client, problem):
             return False
 
         data = json.loads(body.decode("utf-8"))
-        testcases.append({"in": data["in"], "out": data["out"]})
+        if not data["in"].endswith(LIMITATION) and not data["out"].endswith(LIMITATION):
+            testcases.append({"in": data["in"], "out": data["out"]})
 
     return testcases
 
