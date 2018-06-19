@@ -17,6 +17,7 @@ else:
         return " ".join(quote(a) for a in argv)
 
 from .escape import escape_source
+from .compare import compare_output
 
 
 def has_to_recompile(source, target):
@@ -120,34 +121,30 @@ def run_file(cfg, filename):
 
 
 def run_test(cfg, filename, input, output):
-    from difflib import unified_diff
-    from io import StringIO
     logger.info("[RUN] %s", relative_path(cfg.ROOTDIR,input))
 
     argv = cfg.get_run_argv(relative_path(cfg.ROOTDIR, filename))
 
-    logger.debug("%s < %s | diff - %s" %(
-        quote_argv(argv),
+    logger.debug(
+        "cat %s | %s | compare - %s",
         quote_argv([relative_path(cfg.ROOTDIR, input)]),
-        quote_argv([relative_path(cfg.ROOTDIR, output)])))
+        quote_argv(argv),
+        quote_argv([relative_path(cfg.ROOTDIR, output)]))
 
     with open(input,'rb') as f:
         p = Popen(argv,stdin=f,stdout=PIPE)
 
-    (got,_)= p.communicate()
+    (got,_) = p.communicate()
 
     if p.returncode != 0:
         logger.error("[ERR] %s: Exit code = %d", relative_path(cfg.ROOTDIR,filename), p.returncode)
         return
 
-    got_lines = StringIO(got.decode('utf-8')).readlines()
-    with open(output,'r') as f:
-        expected_lines = f.readlines()
+    with open(output, 'rb') as f:
+        expected = f.read()
 
-    diffs=list(unified_diff(got_lines,expected_lines,"/dev/stdout",output))
-    if not diffs:
+    if compare_output(got, expected):
         return True
-    sys.stdout.writelines(diffs)
 
     logger.error("[ERR] %s: incorrect output", relative_path(cfg.ROOTDIR,filename))
 
