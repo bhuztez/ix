@@ -150,7 +150,7 @@ def run_test(cfg, filename, input, output):
 
 
 def get_solution_info(cfg, filename):
-    m = re.match(cfg.SOLUTION_PATTERN, relative_path(cfg.SOLUTIONS_DIR, filename))
+    m = re.match(cfg.SOLUTION_PATTERN, relative_path(cfg.ROOTDIR, filename))
     if m is None:
         return None
     return m.group('oj'), m.group('problem')

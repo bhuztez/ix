@@ -55,7 +55,7 @@ Connections = {
 def request(client, method, url, body=None, headers=None):
     headers = headers or {}
     headers['Connection'] = 'close'
-    headers.setdefault('User-Agent', 'Python-urllib/' + __version__)
+    headers.setdefault('User-agent', 'Python-urllib/' + __version__)
 
     o = urlparse(url)
     host, _, port = o.netloc.partition(":")
@@ -74,6 +74,18 @@ def request(client, method, url, body=None, headers=None):
     body = response.read()
     conn.close()
     return (status, headers, body)
+
+
+def with_headers(extra_headers):
+
+    def decorator(request):
+        def wrapper(client, method, url, body=None, headers=None):
+            h = extra_headers.copy()
+            h.update(headers or {})
+            return request(client, method, url, body, h)
+        return wrapper
+
+    return decorator
 
 
 def with_cookie(field):
