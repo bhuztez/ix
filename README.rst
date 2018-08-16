@@ -2,6 +2,9 @@
 ix
 ==
 
+.. image:: https://travis-ci.org/bhuztez/ix.svg?branch=master
+    :target: https://travis-ci.org/bhuztez/ix
+
 command line client for online judges
 
 run locally
