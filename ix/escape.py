@@ -1,5 +1,7 @@
 from itertools import product
 
+from .relabel import relabel
+
 
 class Node(object):
     __slots__ = ('value','prev','next')
@@ -406,7 +408,7 @@ def escape_source(source, chkstk=False):
     if chkstk:
         if b'___chkstk_ms' in source:
             source += CHKSTK_MS
-    return compress(source)
+    return compress(relabel(source))
 
 
 # Copyright (c) 2011 mingw-w64 project
@@ -430,7 +432,7 @@ def escape_source(source, chkstk=False):
 # DEALINGS IN THE SOFTWARE.
 CHKSTK_MS= b"""
 	.text
-	.global ___chkstk_ms
+	.globl ___chkstk_ms
 ___chkstk_ms:
 	pushl	%eax
 	pushl	%ecx
