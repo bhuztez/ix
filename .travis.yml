@@ -34,6 +34,7 @@ script:
 - python3 -mix -v clean
 - find solutions -name '*.c' | xargs -I {} python3 -mix -v generate {}
 - python3 -mix -v clean
+- python3 -mix -k submit -w
 cache:
   pip: true
   directories:

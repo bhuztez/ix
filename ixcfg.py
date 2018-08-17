@@ -3,6 +3,10 @@ import sys
 import subprocess
 from ix.utils import replace_ext, index_of
 
+if 'TRAVIS_JOB_ID' in os.environ:
+    from ix.credential.readers.env import EnvironmentCredentialReader
+    CREDENTIAL_READER = EnvironmentCredentialReader()
+
 SOLUTION_PATTERN = r'^(?:[^/]+)/(?P<oj>\w+)(?:/.*)?/(?P<problem>[A-Za-z0-9_\-]+)\.c$'
 
 def get_compile_argv(filename):
