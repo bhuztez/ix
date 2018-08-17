@@ -292,7 +292,11 @@ def submit_solution(cfg, oj, problem, filename, wait=False):
 
     while True:
         sleep(2)
-        result = client.check(problem, token)
+        try:
+            result = client.check(problem, token)
+        except TimeoutError:
+            continue
+
         if not result:
             logger.error("[ERR] %s: failed to fetch result", relative_path(cfg.ROOTDIR, filename))
             return None
