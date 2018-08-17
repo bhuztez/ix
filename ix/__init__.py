@@ -295,22 +295,22 @@ def submit_solution(cfg, oj, problem, filename, wait=False):
         result = client.check(problem, token)
         if not result:
             logger.error("[ERR] %s: failed to fetch result", relative_path(cfg.ROOTDIR, filename))
-            break
+            return None
+
+        if not result[0]:
+            logger.info("[SUBMIT] %s: \x1b[33m%s\x1b[39m", relative_path(cfg.ROOTDIR, filename), result[1])
+            continue
 
         if result[0]:
             if not result[2]:
                 logger.info("[SUBMIT] %s: \x1b[31m%s\x1b[39m", relative_path(cfg.ROOTDIR, filename), result[1])
+                return None
             else:
                 if len(result) > 3 and result[3]:
                     logger.info("[SUBMIT] %s: \x1b[32m%s (%s)\x1b[39m", relative_path(cfg.ROOTDIR, filename), result[1], result[3])
                 else:
                     logger.info("[SUBMIT] %s: \x1b[32m%s\x1b[39m", relative_path(cfg.ROOTDIR, filename), result[1])
-            break
-
-        if not result[0]:
-            logger.info("[SUBMIT] %s: \x1b[33m%s\x1b[39m", relative_path(cfg.ROOTDIR, filename), result[1])
-
-    return True
+            return True
 
 
 def clean_generated_files(cfg, filename):
