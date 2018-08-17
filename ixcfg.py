@@ -1,17 +1,20 @@
 import os
 import sys
 import subprocess
+from shutil import which
 from ix.utils import replace_ext, index_of
 
 if 'TRAVIS_JOB_ID' in os.environ:
     from ix.credential.readers.env import EnvironmentCredentialReader
     CREDENTIAL_READER = EnvironmentCredentialReader()
 
+COMPILE = os.environ.get('COMPILE', '0') in ('1', 'true', 'on')
+
 SOLUTION_PATTERN = r'^(?:[^/]+)/(?P<oj>\w+)(?:/.*)?/(?P<problem>[A-Za-z0-9_\-]+)\.c$'
 
 def get_compile_argv(filename):
     target = replace_ext(filename, "elf")
-    return ['clang', '-Wall','-Wextra','-Werror','-o', target, filename], target
+    return [which('clang') or which('gcc'), '-Wall','-Wextra','-Werror','-o', target, filename], target
 
 def list_generated_files(filename):
     return [replace_ext(filename, ext) for ext in ["elf"]]
@@ -51,7 +54,7 @@ def generate_submission(filename, env):
     llvm_target = get_llvm_target(env)
     INCLUDE = get_mingw_include(env)
     VERBOSE_FLAG = ['-v'] if VERBOSE else []
-    argv = ['clang', '-target', llvm_target] + VERBOSE_FLAG + INCLUDE + ['-S', '-o-', filename]
+    argv = ['clang', '-target', llvm_target] + VERBOSE_FLAG + INCLUDE + ['-Os', '-S', '-o-', filename]
     return subprocess.check_output(argv)
 
 def prepare_submission(envs, filename):
@@ -59,5 +62,10 @@ def prepare_submission(envs, filename):
     if not env:
         return None
 
-    code = generate_submission(filename, env)
+    if COMPILE:
+        code = generate_submission(filename, env)
+    else:
+        with open(filename,'r') as f:
+            code = f.read()
+
     return env, code
