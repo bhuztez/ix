@@ -2,7 +2,7 @@
 ix
 ==
 
-ix is command line client for online judges. Fetch sample test cases,
+ix is command line client of online judges. Fetch sample test cases,
 test your solutions against them, submit your solutions.
 
 
@@ -13,12 +13,12 @@ Quick Start
 
     $ git clone git://github.com/bhuztez/ix.git
     $ cd ix
-    $ python3 -mix submit -w solutions/HR/solve-me-first.c
-    [SUBMIT] solutions/HR/solve-me-first.c
-    HR (hackerrank.com)
+    $ python3 -mix submit -w solutions/POJ/1000.c
+    [SUBMIT] solutions/POJ/1000.c
+    POJ (poj.org)
     Username: your_username
     Password:
-    [SUBMIT] solutions/HR/solve-me-first.c: Accepted
+    [SUBMIT] solutions/POJ/1000.c: Accepted (Memory: 328K, Time: 0MS)
     $
 
 
@@ -28,12 +28,12 @@ Supported Online Judges
 ============== ====== =======================
 Online Judge   Submit Fetch sample test cases
 ============== ====== =======================
-GeeksForGeeks  Y      N
-HackerRank     Y      Y
-POJ            Y      Y
-SPOJ           Y      Y
-UVa
+`AOJ`__        Y      Y
+`POJ`__        Y      Y
 ============== ====== =======================
+
+.. __: http://judge.u-aizu.ac.jp/onlinejudge/index.jsp
+.. __: http://poj.org/
 
 
 Using ix
@@ -44,7 +44,6 @@ Using ix
 
    usage
    configuration
-   environment
 
 
 Extending ix
@@ -53,6 +52,4 @@ Extending ix
 .. toctree::
    :maxdepth: 2
 
-   client
-   reader
-   storage
+   Adding client of online judge <client>

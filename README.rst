@@ -13,7 +13,7 @@ run locally
 
     $ python3 -mix run solutions/POJ/1000.c
 
-check against sample input/output
+check against sample test cases
 
 .. code-block:: console
 

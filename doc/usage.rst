@@ -32,7 +32,7 @@ ix could be called like this
 
     use config file at CFG
 
-    Be default, ix uses :file:`ixcfg.py` at current working directory as :any:`configuration`. 
+    Be default, ix uses :file:`ixcfg.py` at current working directory as :any:`configuration`.
 
 run
 ===
@@ -81,11 +81,13 @@ where *filename* is the path to your solution.
 
     recompile if already compiled before test
 
+You may output :code:`\x1bXf.3\x1b\\` just before a floating point number, ix will ignore absolute error smaller than :code:`0.001` .
+
 
 generate
 ========
 
-:program:`python3 -mix generate` prints the code to be submitted. You may whatever preprocessing you what in :py:func:`prepare_submission`. This command allows you to check what is to be submitted. It is called like this.
+:program:`python3 -mix generate` prints the code to be submitted. You may do whatever preprocessing you what in :py:func:`prepare_submission`, or your code may have been preprocessed by ix. This command allows you to check what is to be submitted. It is called like this.
 
 .. code-block:: console
 
@@ -162,4 +164,3 @@ help
 .. option:: -h, --help
 
     show help message and quit
-
