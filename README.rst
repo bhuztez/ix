@@ -5,6 +5,9 @@ ix
 .. image:: https://travis-ci.org/bhuztez/ix.svg?branch=master
     :target: https://travis-ci.org/bhuztez/ix
 
+.. image:: https://readthedocs.org/projects/ix/badge/?version=latest
+    :target: https://ix.readthedocs.io/en/latest/
+
 command line client for online judges
 
 run locally
