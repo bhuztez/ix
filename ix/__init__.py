@@ -281,7 +281,12 @@ def submit_solution(cfg, oj, problem, filename, wait=False):
         return None
     client, env, code = submission
 
-    token = client.submit(problem, env, code)
+    while True:
+        try:
+            token = client.submit(problem, env, code)
+            break
+        except TimeoutError:
+            continue
 
     if not token:
         logger.error("[ERR] %s: submission failed", relative_path(cfg.ROOTDIR, filename))
