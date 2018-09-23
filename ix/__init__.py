@@ -95,21 +95,23 @@ def relative_path(basedir, filename):
         return filename
 
 
-def compile_file(ROOTDIR, argv, source, target=None):
-    logger.info("[COMPILE] %s", relative_path(ROOTDIR, source))
+def compile_file(ROOTDIR, argv, target, input=None, output=False):
+    logger.info("[COMPILE] %s", relative_path(ROOTDIR, target))
 
     logger.debug(quote_argv(argv))
 
-    proc = Popen(argv,stdout=PIPE)
-    result = proc.communicate()
+    proc = Popen(argv,stdin=None if input is None else PIPE,stdout=PIPE)
+
+    result = proc.communicate(input)
 
     if proc.returncode == 0:
-        if target:
-            return target
-        else:
-            return result[0]
+        if output:
+            with open(target, 'wb') as f:
+                f.write(result[0])
+                os.fchmod(f.fileno(), 0o0775)
+        return True
 
-    logger.error("[ERROR] %s: compilation failed", relative_path(ROOTDIR, source))
+    logger.error("[ERROR] %s: compilation failed", relative_path(ROOTDIR, target))
 
 
 def run_file(cfg, filename):
@@ -161,11 +163,12 @@ def compile_solution(cfg, filename, recompile):
     if argv is None:
         return filename
 
-    argv, target = argv
+    target = argv[1]
     if not (recompile or cfg.has_to_recompile(filename, target)):
         return target
 
-    return compile_file(cfg.ROOTDIR, argv, filename, target)
+    if compile_file(cfg.ROOTDIR, *argv):
+        return target
 
 
 def find_solutions(cfg, filename=None):
