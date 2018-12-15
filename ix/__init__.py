@@ -200,7 +200,7 @@ def _find_testcases(dirname, basename):
 
 
 def save_testcase(filename, data):
-    data = data.replace('\r\n','\n').lstrip("\n")
+    data = data.replace('\r\n','\n')
 
     if not data.endswith("\n"):
         data += "\n"
